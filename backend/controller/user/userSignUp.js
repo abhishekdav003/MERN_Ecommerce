@@ -1,10 +1,17 @@
-const bcrypt = require("bcryptjs");
 const userModel = require("../../models/userModel");
-const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 
-async function userSignInController(req, res) {
+async function userSignUpController(req, res) {
   try {
-    const { email, password } = req.body;
+    const { email, password, name } = req.body;
+
+    const user = await userModel.findOne({ email });
+
+    console.log("user", user);
+
+    if (user) {
+      throw new Error("Already user exits.");
+    }
 
     if (!email) {
       throw new Error("Please provide email");
@@ -12,40 +19,32 @@ async function userSignInController(req, res) {
     if (!password) {
       throw new Error("Please provide password");
     }
-
-    const user = await userModel.findOne({ email });
-
-    if (!user) {
-      throw new Error("User not found");
+    if (!name) {
+      throw new Error("Please provide name");
     }
 
-    const checkPassword = await bcrypt.compare(password, user.password);
+    const salt = bcrypt.genSaltSync(10);
+    const hashPassword = await bcrypt.hashSync(password, salt);
 
-    console.log("checkPassoword", checkPassword);
-
-    if (checkPassword) {
-      const tokenData = {
-        _id: user._id,
-        email: user.email,
-      };
-      const token = await jwt.sign(tokenData, process.env.TOKEN_SECRET_KEY, {
-        expiresIn: 60 * 60 * 8,
-      });
-
-      const tokenOption = {
-        httpOnly: true,
-        secure: true,
-      };
-
-      res.cookie("token", token, tokenOption).status(200).json({
-        message: "Login successfully",
-        data: token,
-        success: true,
-        error: false,
-      });
-    } else {
-      throw new Error("Please check Password");
+    if (!hashPassword) {
+      throw new Error("Something is wrong");
     }
+
+    const payload = {
+      ...req.body,
+      role: "GENERAL",
+      password: hashPassword,
+    };
+
+    const userData = new userModel(payload);
+    const saveUser = await userData.save();
+
+    res.status(201).json({
+      data: saveUser,
+      success: true,
+      error: false,
+      message: "User created Successfully!",
+    });
   } catch (err) {
     res.json({
       message: err.message || err,
@@ -55,4 +54,4 @@ async function userSignInController(req, res) {
   }
 }
 
-module.exports = userSignInController;
+module.exports = userSignUpController;
