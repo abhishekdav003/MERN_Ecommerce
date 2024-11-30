@@ -1,5 +1,5 @@
 const backendDomin =
-  "https://mern-ecommerce-chi-pied.vercel.app/?vercelToolbarCode=MzVNz6jsysOuxgH";
+  "https://mern-ecommerce-chi-pied.vercel.app";
 
 const SummaryApi = {
     signUP : {
