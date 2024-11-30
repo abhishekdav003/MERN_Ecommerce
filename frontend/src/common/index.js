@@ -1,4 +1,5 @@
-const backendDomin = "http://localhost:8080"
+const backendDomin =
+  "https://mern-ecommerce-chi-pied.vercel.app/?vercelToolbarCode=MzVNz6jsysOuxgH";
 
 const SummaryApi = {
     signUP : {
